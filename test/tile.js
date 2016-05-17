@@ -13,4 +13,10 @@ describe('Tile', function() {
 
     expect(tile.width).to.eq(34);
   });
+
+  it('has coordinates', function() {
+    let tile = new Tile(1, 4);
+    expect(tile.xCoor).to.eq(17 + 1*34);
+    expect(tile.yCoor).to.eq(17 + 4*34);
+  });
 });
