@@ -14,7 +14,13 @@
 - Map (inclusive of pillars)
 - Blocks
 - Explosion
+- Tile
 - Bombs
+
+#### Tile
+- A tile has boundaries
+- MVP: A tile is occupied or not occupied
+- Has attributes that will describe what is on or in the tile
 
 #### Bomber Person
 - They can be controlled using keys
