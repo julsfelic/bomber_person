@@ -5,7 +5,7 @@ const Map = require('../lib/map');
 
 describe('GameEngine', function() {
   it('is instantiated', function() {
-    let person = new Person([0,0]);
+    let person = new Person(0, 0);
     let map = new Map(300, 500);
     let gameEngine = new GameEngine(person, map);
 
@@ -14,7 +14,7 @@ describe('GameEngine', function() {
   });
 
   it('can move player forward', function() {
-    let person = new Person([0,0]);
+    let person = new Person(0, 0);
     let map = new Map(300, 500);
     let gameEngine = new GameEngine(person, map);
 
@@ -24,7 +24,7 @@ describe('GameEngine', function() {
   });
 
   it('cannot move player into a pillar', function() {
-    let person = new Person([0,0]);
+    let person = new Person(0, 0);
     let map = new Map(300, 500);
     let gameEngine = new GameEngine(person, map);
 
