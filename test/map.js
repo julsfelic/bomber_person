@@ -19,4 +19,12 @@ describe('Map', function() {
   it('has a lower boundary', function() {
     expect(map.boundaryHeightBottom).to.eq(266);
   });
+
+  it('is inbound', function() {
+    expect(map.inbounds(150, 250)).to.eq(true);
+  });
+
+  it('is not inbound', function() {
+    expect(map.inbounds(300, 500)).to.eq(false);
+  });
 });
