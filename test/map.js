@@ -27,4 +27,16 @@ describe('Map', function() {
   it('is not inbound', function() {
     expect(map.inbounds(300, 500)).to.eq(false);
   });
+
+  it('is occupied', function() {
+    expect(map.occupied(1, 1)).to.eq(true);
+  });
+
+  it('is not occupied', function() {
+    expect(map.occupied(0, 0)).to.eq(false);
+  });
+
+  it('is not exist', function() {
+    expect(map.occupied(1000, 1000)).to.eq(true);
+  });
 });
