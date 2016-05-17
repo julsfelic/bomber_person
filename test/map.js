@@ -36,7 +36,7 @@ describe('Map', function() {
     expect(map.occupied(0, 0)).to.eq(false);
   });
 
-  it('is not exist', function() {
+  it('is occupied when not exist', function() {
     expect(map.occupied(1000, 1000)).to.eq(true);
   });
 });
