@@ -22,7 +22,6 @@ describe('Controller', function() {
 
     expect(controller.id).to.eq(1);
     expect(controller.keyStrokes[40]).to.eq('down');
-    expect(controller.keyLog['up']).to.eq(false);
     expect(controller.gameEngine.people[1].x).to.eq(0);
     expect(controller.gameEngine.map.width).to.eq(500);
   });
