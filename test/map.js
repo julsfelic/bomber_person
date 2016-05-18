@@ -29,14 +29,23 @@ describe('Map', function() {
   });
 
   it('is occupied', function() {
-    expect(map.occupied(1, 1)).to.eq(true);
+    expect(map.occupied(2, 2)).to.eq(true);
   });
 
   it('is not occupied', function() {
-    expect(map.occupied(0, 0)).to.eq(false);
+    expect(map.occupied(1, 1)).to.eq(false);
   });
 
   it('is occupied when not exist', function() {
     expect(map.occupied(1000, 1000)).to.eq(true);
+  });
+
+  context('#createGrid()', function() {
+    it('creates an array that has tiles', function() {
+      expect(map.grid.length).to.eq(15);
+      expect(map.grid[0].length).to.eq(13);
+      expect(map.grid[0][0].occupied).to.eq(true);
+      expect(map.grid[1][1].occupied).to.eq(false);
+    });
   });
 });
