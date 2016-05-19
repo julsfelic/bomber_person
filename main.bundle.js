@@ -47,18 +47,18 @@
 	'use strict';
 
 	var GameEngine = __webpack_require__(1);
-	var Map = __webpack_require__(2);
-	var Person = __webpack_require__(4);
-	var Controller = __webpack_require__(5);
+	var Map = __webpack_require__(4);
+	var Person = __webpack_require__(5);
+	var Controller = __webpack_require__(6);
 
 	var canvas = document.getElementById('game');
 	var context = canvas.getContext('2d');
 
 	var map = new Map(435, 512);
-	var playerOne = new Person(1, 1, 1, context);
-	var playerTwo = new Person(2, 13, 11, context);
+	var playerOne = new Person({ id: 1, x: 1, y: 1, context: context });
+	var playerTwo = new Person({ id: 2, x: 13, y: 11, context: context });
 	var people = { 1: playerOne, 2: playerTwo };
-	var gameEngine = new GameEngine(people, map);
+	var gameEngine = new GameEngine(people, map, context);
 	var controllerOne = new Controller(1, {
 	  '38': 'up',
 	  '39': 'right',
@@ -78,72 +78,29 @@
 	controllerOne.bindEvents();
 	controllerTwo.bindEvents();
 
-	// function Block(x, y, width, height, context) {
-	//   this.x = x;
-	//   this.y = y;
-	//   this.width = width || 10;
-	//   this.height = height || 10;
-	//   this.context = context;
-	// }
-	//
-	// Block.prototype.draw = function () {
-	//   context.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas.
-	//   context.fillRect(this.x, this.y, this.width, this.height);
-	//   return this;
-	// };
-	//
-	// Block.prototype.move  = function (x, y) {
-	//   this.x = this.x + x;
-	//   this.y = this.y + y;
-	//   return this;
-	// };
-	//
-	// var b = new Block(50, 50, 10, 10, context);
-	//
-	// function gemeleep() {
-	//   b.move(0, -1).draw();
-	//   // console.log("y:" + b.y);
-	//   // console.log("x:" + b.x);
-	//   if (b.y <= 10) {
-	//     requestAnimationFrame(gameLoop);
-	//     return;
-	//   }
-	//   requestAnimationFrame(gemeleep);
-	// }
-	//
-	// function gameLoop() {
-	//   b.move(0, 1).draw();
-	//   // console.log("y:" + b.y);
-	//   // console.log("x:" + b.x);
-	//   if (b.y >= 290) {
-	//     requestAnimationFrame(gemeleep);
-	//     return;
-	//   }
-	//   requestAnimationFrame(gameLoop);
-	// }
-	//
-	// requestAnimationFrame(gameLoop);
-
 /***/ },
 /* 1 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Block = __webpack_require__(2);
 
 	var GameEngine = (function () {
-	  function GameEngine(people, map) {
+	  function GameEngine(people, map, context) {
 	    _classCallCheck(this, GameEngine);
 
 	    this.people = people;
 	    this.map = map;
+	    this.context = context;
 	  }
 
 	  _createClass(GameEngine, [{
-	    key: "move",
+	    key: 'move',
 	    value: function move(id, x, y) {
 	      var person = this.people[id];
 	      var xCoor = x + person.x;
@@ -155,8 +112,21 @@
 	      }
 	    }
 	  }, {
-	    key: "start",
+	    key: 'placeBlocks',
+	    value: function placeBlocks() {
+	      var tile = this.map.grid[1][6];
+	      var block = new Block(tile, this.context);
+	      tile.occupyWith('block', block);
+
+	      requestAnimationFrame((function makeblocks() {
+	        block.draw();
+	      }).bind(this));
+	    }
+	  }, {
+	    key: 'start',
 	    value: function start() {
+	      this.placeBlocks();
+
 	      requestAnimationFrame((function gameLoop() {
 	        // that.context.fillRect(40, 40, 100, 100)
 	        for (var person in this.people) {
@@ -175,6 +145,111 @@
 
 /***/ },
 /* 2 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Tile = __webpack_require__(3);
+
+	var Block = (function () {
+	  function Block(tile, context) {
+	    _classCallCheck(this, Block);
+
+	    this.x = tile.x;
+	    this.y = tile.y;
+	    this.height = tile.height;
+	    this.width = tile.width;
+	    this.xCoor = tile.x * this.width + this.width / 2;
+	    this.yCoor = tile.y * this.height + this.height / 2;
+	    this.context = context;
+	    this.image = createImage();
+	  }
+
+	  _createClass(Block, [{
+	    key: 'draw',
+	    value: function draw() {
+	      this.context.drawImage(this.image, this.x * this.height + 6, this.y * this.width - 14);
+	    }
+	  }]);
+
+	  return Block;
+	})();
+
+	function createImage() {
+	  var image = new Image();
+	  image.src = '../assets/block.png';
+	  return image;
+	}
+
+	module.exports = Block;
+
+/***/ },
+/* 3 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Tile = (function () {
+	  function Tile(x, y) {
+	    var pillar = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
+
+	    _classCallCheck(this, Tile);
+
+	    this.x = x;
+	    this.y = y;
+	    this.height = 34;
+	    this.width = 34;
+	    this.xCoor = x * this.width + this.width / 2;
+	    this.yCoor = y * this.height + this.height / 2;
+	    this.contains = {
+	      pillar: pillar,
+	      block: false,
+	      person: false,
+	      bomb: false,
+	      explosion: false
+	    };
+	    this.occupant = {
+	      block: null,
+	      person: null,
+	      bomb: null,
+	      explosion: null
+	    };
+	  }
+
+	  _createClass(Tile, [{
+	    key: 'occupied',
+	    value: function occupied() {
+	      return this.contains['pillar'] || this.contains['block'] || this.contains['bomb'];
+	    }
+	  }, {
+	    key: 'occupyWith',
+	    value: function occupyWith(key, value) {
+	      this.occupant[key] = value;
+	      this.contains[key] = true;
+	    }
+	  }, {
+	    key: 'unoccupy',
+	    value: function unoccupy(key) {
+	      this.occupant[key] = null;
+	      this.contains[key] = false;
+	    }
+	  }]);
+
+	  return Tile;
+	})();
+
+	module.exports = Tile;
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -212,13 +287,11 @@
 	      if (x >= this.grid.length || y >= this.grid[0].length || x < 0 || y < 0) {
 	        return true;
 	      }
-	      return this.grid[x][y].occupied;
+	      return this.grid[x][y].occupied();
 	    }
 	  }, {
 	    key: 'createGrid',
 	    value: function createGrid() {
-	      // let tileWidth = 15 - 2;
-	      // let tileHeight = 13 - 2;
 	      var tileWidth = 15;
 	      var tileHeight = 13;
 	      var grid = [];
@@ -260,44 +333,7 @@
 	module.exports = Map;
 
 /***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	"use strict";
-
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-	var Tile = (function () {
-	  function Tile(x, y) {
-	    var occupied = arguments.length <= 2 || arguments[2] === undefined ? false : arguments[2];
-
-	    _classCallCheck(this, Tile);
-
-	    this.x = x;
-	    this.y = y;
-	    this.height = 34;
-	    this.width = 34;
-	    this.xCoor = x * this.width + this.width / 2;
-	    this.yCoor = y * this.height + this.height / 2;
-	    this.occupied = occupied;
-	  }
-
-	  _createClass(Tile, [{
-	    key: "occupy",
-	    value: function occupy() {
-	      this.status = true;
-	    }
-	  }]);
-
-	  return Tile;
-	})();
-
-	module.exports = Tile;
-
-/***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -307,20 +343,16 @@
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Person = (function () {
-	  function Person(id, x, y, context) {
+	  function Person(options) {
 	    _classCallCheck(this, Person);
 
-	    this.id = id;
-	    this.x = x;
-	    this.y = y;
+	    this.id = options.id;
+	    this.x = options.x;
+	    this.y = options.y;
 	    this.width = 34;
 	    this.height = 34;
-	    this.context = context;
-
-	    var image = new Image();
-	    image.src = "../assets/player" + this.id + ".png";
-
-	    this.image = image;
+	    this.context = options.context;
+	    this.image = options.image || createImage(this.id);
 	  }
 
 	  _createClass(Person, [{
@@ -339,7 +371,6 @@
 	  }, {
 	    key: "draw",
 	    value: function draw() {
-	      // this.context.fillRect((this.x * this.height), (this.y * this.width - 4), this.width, this.height);
 	      this.context.drawImage(this.image, this.x * this.height + 6, this.y * this.width - 14);
 	    }
 	  }]);
@@ -347,10 +378,16 @@
 	  return Person;
 	})();
 
+	function createImage(id) {
+	  var image = new Image();
+	  image.src = "../assets/player" + id + ".png";
+	  return image;
+	}
+
 	module.exports = Person;
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -366,10 +403,12 @@
 	    this.id = id;
 	    this.keyStrokes = commands;
 	    this.directions = {};
+	    this.map = {};
 	    var keys = Object.keys(this.keyStrokes);
 	    for (var i = 0; i < keys.length; i++) {
 	      var value = this.keyStrokes[keys[i]];
 	      this.directions[value] = keys[i];
+	      this.map[keys[i]] = false;
 	    }
 	    this.gameEngine = gameEngine;
 	  }
@@ -377,43 +416,35 @@
 	  _createClass(Controller, [{
 	    key: 'bindEvents',
 	    value: function bindEvents() {
-	      var canvas = document.getElementById('game');
-	      var map = {};
 	      document.addEventListener('keydown', (function (e) {
+	        this.map[e.keyCode] = true;
 	        e.preventDefault();
-	        map[e.keyCode] = true;
 	      }).bind(this));
 
-	      document.addEventListener('keyup', function (e) {
-	        map[e.keyCode] = false;
-	      });
-
-	      while (true) {
-	        if (map[this.directions["up"]] === true) {
-	          this.gameEngine.move(this.id, 0, -1);
-	        }
-	        if (map[this.directions["down"]] === true) {
-	          this.gameEngine.move(this.id, 0, 1);
-	        }
-	        if (map[this.directions["right"]] === true) {
-	          this.gameEngine.move(this.id, 1, 0);
-	        }
-	        if (map[this.directions["left"]] === true) {
-	          this.gameEngine.move(this.id, -1, 0);
-	        }
-	        // if (this.keyStrokes[keyCode] === "down") {
-	        //   e.preventDefault();
-	        //   this.gameEngine.move(this.id, 0, 1);
-	        // }
-	        // if (this.keyStrokes[keyCode] === "right") {
-	        //   e.preventDefault();
-	        //   this.gameEngine.move(this.id, 1, 0);
-	        // }
-	        // if (this.keyStrokes[keyCode] === "left") {
-	        //   e.preventDefault();
-	        //   this.gameEngine.move(this.id, -1, 0);
-	        // }
+	      document.addEventListener('keyup', (function (e) {
+	        this.map[e.keyCode] = false;
+	      }).bind(this));
+	      this.loop();
+	    }
+	  }, {
+	    key: 'loop',
+	    value: function loop() {
+	      if (this.map[this.directions["up"]] === true) {
+	        this.gameEngine.move(this.id, 0, -1);
 	      }
+	      if (this.map[this.directions["down"]] === true) {
+	        this.gameEngine.move(this.id, 0, 1);
+	      }
+	      if (this.map[this.directions["right"]] === true) {
+	        this.gameEngine.move(this.id, 1, 0);
+	      }
+	      if (this.map[this.directions["left"]] === true) {
+	        this.gameEngine.move(this.id, -1, 0);
+	      }
+	      if (this.map[this.directions["bomb"]] === true) {
+	        console.log("Boom!");
+	      }
+	      setTimeout(this.loop.bind(this), 1000 / 12);
 	    }
 	  }]);
 

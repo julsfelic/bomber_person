@@ -44,8 +44,8 @@ describe('Map', function() {
     it('creates an array that has tiles', function() {
       expect(map.grid.length).to.eq(15);
       expect(map.grid[0].length).to.eq(13);
-      expect(map.grid[0][0].occupied).to.eq(true);
-      expect(map.grid[1][1].occupied).to.eq(false);
+      expect(map.grid[0][0].occupied()).to.eq(true);
+      expect(map.grid[1][1].occupied()).to.eq(false);
     });
   });
 });

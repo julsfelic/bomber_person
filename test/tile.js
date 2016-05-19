@@ -26,16 +26,6 @@ describe('Tile', function() {
   it('has a default occupied of false', function() {
     let tile = new Tile();
 
-    expect(tile.occupied).to.eq(false);
-  });
-
-  context('#occupy()', function() {
-    it('changes occupied to true', function() {
-      let tile = new Tile();
-
-      tile.occupy();
-
-      expect(tile.occupied).to.eq(true);
-    });
+    expect(tile.occupied()).to.eq(false);
   });
 });
