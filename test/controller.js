@@ -1,17 +1,18 @@
-const expect = require('chai').expect
+const expect = require('chai').expect;
+
 
 const Controller = require('../lib/controller');
-const Person = require('../lib/person');
+const People = require('../lib/people');
 const Map = require('../lib/map');
 const GameEngine = require('../lib/game_engine');
+const Graphic = require('../lib/graphic');
 
 describe('Controller', function() {
   it('can be instantiated', function() {
-    let playerOne = new Person({id: 1, x: 0, y: 0, image: 'test.png'});
-    let playerTwo = new Person({id: 2, x: 12, y: 10, image: 'test.png'});
-    let people = { 1: playerOne, 2: playerTwo };
+    let people = new People([{id: 1, x: 1, y: 1, context: context}, {id: 2, x: 13, y: 11, context: context}]);
     let map = new Map(300, 500);
-    let gameEngine = new GameEngine(people, map);
+    let graphic = new Graphic({}, []);
+    let gameEngine = new GameEngine(people, map, graphic);
     let controller = new Controller(1, {
       '38': 'up',
       '39': 'right',

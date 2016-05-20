@@ -47,18 +47,19 @@
 	'use strict';
 
 	var GameEngine = __webpack_require__(1);
-	var Map = __webpack_require__(4);
-	var Person = __webpack_require__(5);
+	var People = __webpack_require__(4);
 	var Controller = __webpack_require__(6);
+	var Graphic = __webpack_require__(7);
+	var Map = __webpack_require__(8);
 
 	var canvas = document.getElementById('game');
 	var context = canvas.getContext('2d');
 
 	var map = new Map(435, 512);
-	var playerOne = new Person({ id: 1, x: 1, y: 1, context: context });
-	var playerTwo = new Person({ id: 2, x: 13, y: 11, context: context });
-	var people = { 1: playerOne, 2: playerTwo };
-	var gameEngine = new GameEngine(people, map, context);
+
+	var graphic = new Graphic([], context);
+	var people = new People([{ id: 1, x: 1, y: 1, context: context }, { id: 2, x: 13, y: 11, context: context }]);
+	var gameEngine = new GameEngine(people, map, context, graphic);
 	var controllerOne = new Controller(1, {
 	  '38': 'up',
 	  '39': 'right',
@@ -91,18 +92,20 @@
 	var Block = __webpack_require__(2);
 
 	var GameEngine = (function () {
-	  function GameEngine(people, map, context) {
+	  function GameEngine(people, map, context, graphic) {
 	    _classCallCheck(this, GameEngine);
 
 	    this.people = people;
 	    this.map = map;
 	    this.context = context;
+	    this.graphic = graphic;
+	    this.drawables = [this.map, this.people];
 	  }
 
 	  _createClass(GameEngine, [{
 	    key: 'move',
 	    value: function move(id, x, y) {
-	      var person = this.people[id];
+	      var person = this.people.get(id);
 	      var xCoor = x + person.x;
 	      var yCoor = y + person.y;
 	      if (this.map.occupied(xCoor, yCoor)) {
@@ -125,16 +128,8 @@
 	  }, {
 	    key: 'start',
 	    value: function start() {
-	      this.placeBlocks();
-
-	      requestAnimationFrame((function gameLoop() {
-	        // that.context.fillRect(40, 40, 100, 100)
-	        for (var person in this.people) {
-	          this.people[person].draw();
-	        }
-
-	        requestAnimationFrame(gameLoop.bind(this));
-	      }).bind(this));
+	      this.graphic.onload();
+	      this.graphic.draw();
 	    }
 	  }]);
 
@@ -172,7 +167,7 @@
 	  _createClass(Block, [{
 	    key: 'draw',
 	    value: function draw() {
-	      this.context.drawImage(this.image, this.x * this.height + 6, this.y * this.width - 14);
+	      this.context.drawImage(this.image, this.x * this.height + 4, this.y * this.width - 1);
 	    }
 	  }]);
 
@@ -241,6 +236,9 @@
 	      this.occupant[key] = null;
 	      this.contains[key] = false;
 	    }
+	  }, {
+	    key: 'draw',
+	    value: function draw() {}
 	  }]);
 
 	  return Tile;
@@ -258,79 +256,61 @@
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
-	var Tile = __webpack_require__(3);
+	var Person = __webpack_require__(5);
 
-	var Map = (function () {
-	  function Map(height, width) {
-	    _classCallCheck(this, Map);
+	var People = (function () {
+	  function People(optionsArray) {
+	    _classCallCheck(this, People);
 
-	    this.grid = this.createGrid();
-	    this.height = height;
-	    this.width = width;
-
-	    var tile = new Tile();
-
-	    this.boundaryHeightTop = tile.height;
-	    this.boundaryHeightBottom = height - tile.height;
-	    this.boundaryWidthLeft = tile.width;
-	    this.boundaryWidthRight = width - tile.width;
+	    this.players = {};
+	    for (var i = 0; i < optionsArray.length; i++) {
+	      this.set(optionsArray[i]);
+	    }
 	  }
 
-	  _createClass(Map, [{
-	    key: 'inbounds',
-	    value: function inbounds(x, y) {
-	      return x > this.boundaryWidthLeft && x < this.boundaryWidthRight && y > this.boundaryHeightTop && y < this.boundaryHeightBottom;
+	  _createClass(People, [{
+	    key: 'all',
+	    value: function all() {
+	      var keys = Object.keys(this.players);
+	      var values = [];
+	      for (var i = 0; i < keys.length; i++) {
+	        var key = keys[i];
+	        values.push(this.players[key]);
+	      }
+	      return values;
 	    }
 	  }, {
-	    key: 'occupied',
-	    value: function occupied(x, y) {
-	      if (x >= this.grid.length || y >= this.grid[0].length || x < 0 || y < 0) {
-	        return true;
+	    key: 'draw',
+	    value: function draw(context) {
+	      var values = this.all();
+	      for (var i = 0; i < values.length; i++) {
+	        values[i].draw(context);
 	      }
-	      return this.grid[x][y].occupied();
 	    }
 	  }, {
-	    key: 'createGrid',
-	    value: function createGrid() {
-	      var tileWidth = 15;
-	      var tileHeight = 13;
-	      var grid = [];
-	      for (var i = 0; i < tileWidth; i++) {
-	        grid[i] = [];
+	    key: 'onload',
+	    value: function onload(context) {
+	      var values = this.all();
+	      for (var i = 0; i < values.length; i++) {
+	        values[i].onload(context);
 	      }
-	      // False indicates there is no boundary
-	      // True indicates there is a boundary
-	      for (var i = 0; i < tileWidth; i++) {
-	        if (i === 0 || i === 14) {
-	          for (var j = 0; j < tileHeight; j++) {
-	            grid[i][j] = new Tile(i, j, true);
-	          }
-	        } else if (i % 2 !== 0 && i !== 0) {
-	          for (var j = 0; j < tileHeight; j++) {
-	            if (j === 0 || j === 12) {
-	              grid[i][j] = new Tile(i, j, true);
-	            } else {
-	              grid[i][j] = new Tile(i, j, false);
-	            }
-	          }
-	        } else {
-	          for (var j = 0; j < tileHeight; j++) {
-	            if (j % 2 !== 0 && j !== 0) {
-	              grid[i][j] = new Tile(i, j, false);
-	            } else {
-	              grid[i][j] = new Tile(i, j, true);
-	            }
-	          }
-	        }
-	      }
-	      return grid;
+	    }
+	  }, {
+	    key: 'get',
+	    value: function get(id) {
+	      return this.players[id];
+	    }
+	  }, {
+	    key: 'set',
+	    value: function set(options) {
+	      this.players[options.id] = new Person(options);
 	    }
 	  }]);
 
-	  return Map;
+	  return People;
 	})();
 
-	module.exports = Map;
+	module.exports = People;
 
 /***/ },
 /* 5 */
@@ -351,27 +331,32 @@
 	    this.y = options.y;
 	    this.width = 34;
 	    this.height = 34;
-	    this.context = options.context;
 	    this.image = options.image || createImage(this.id);
 	  }
 
 	  _createClass(Person, [{
 	    key: "move",
 	    value: function move(rightLeft, northSouth) {
-	      this.clear();
 	      this.x = this.x + rightLeft;
 	      this.y = this.y + northSouth;
-	      this.draw();
+	    }
+	  }, {
+	    key: "onload",
+	    value: function onload(context) {
+	      this.image.onload = (function () {
+	        this.draw(context);
+	      }).bind(this);
 	    }
 	  }, {
 	    key: "clear",
-	    value: function clear() {
-	      this.context.clearRect(this.x * this.height, this.y * this.width - 14, this.width, this.height);
+	    value: function clear(context) {
+	      context.clearRect(this.x * this.height, this.y * this.width - 14, this.width, this.height);
 	    }
 	  }, {
 	    key: "draw",
-	    value: function draw() {
-	      this.context.drawImage(this.image, this.x * this.height + 6, this.y * this.width - 14);
+	    value: function draw(context) {
+	      this.clear(context);
+	      context.drawImage(this.image, this.x * this.height + 6, this.y * this.width - 14);
 	    }
 	  }]);
 
@@ -452,6 +437,145 @@
 	})();
 
 	module.exports = Controller;
+
+/***/ },
+/* 7 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Graphic = (function () {
+	  function Graphic(drawables, context) {
+	    _classCallCheck(this, Graphic);
+
+	    this.drawables = drawables;
+	    this.context = context;
+	  }
+
+	  _createClass(Graphic, [{
+	    key: "onload",
+	    value: function onload() {
+	      requestAnimationFrame((function gameLoop() {
+	        for (var i = 0; i < this.drawables.length; i++) {
+	          this.drawables.onload(this.context);
+	        }
+	      }).bind(this));
+	    }
+	  }, {
+	    key: "draw",
+	    value: function draw() {
+	      requestAnimationFrame((function gameLoop() {
+	        for (var i = 0; i < this.drawables.length; i++) {
+	          this.drawables.draw(this.context);
+	        }
+	        requestAnimationFrame(gameLoop.bind(this));
+	      }).bind(this));
+	    }
+	  }]);
+
+	  return Graphic;
+	})();
+
+	module.exports = Graphic;
+
+/***/ },
+/* 8 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Tile = __webpack_require__(3);
+
+	var Map = (function () {
+	  function Map(height, width) {
+	    _classCallCheck(this, Map);
+
+	    this.grid = this.createGrid();
+
+	    this.height = height;
+	    this.width = width;
+
+	    var tile = new Tile();
+
+	    this.boundaryHeightTop = tile.height;
+	    this.boundaryHeightBottom = height - tile.height;
+	    this.boundaryWidthLeft = tile.width;
+	    this.boundaryWidthRight = width - tile.width;
+	  }
+
+	  _createClass(Map, [{
+	    key: 'draw',
+	    value: function draw(context) {
+	      return context;
+	    }
+	  }, {
+	    key: 'onload',
+	    value: function onload(context) {
+	      return context;
+	    }
+	  }, {
+	    key: 'inbounds',
+	    value: function inbounds(x, y) {
+	      return x > this.boundaryWidthLeft && x < this.boundaryWidthRight && y > this.boundaryHeightTop && y < this.boundaryHeightBottom;
+	    }
+	  }, {
+	    key: 'occupied',
+	    value: function occupied(x, y) {
+	      if (x >= this.grid.length || y >= this.grid[0].length || x < 0 || y < 0) {
+	        return true;
+	      }
+	      return this.grid[x][y].occupied();
+	    }
+	  }, {
+	    key: 'createGrid',
+	    value: function createGrid() {
+	      var tileWidth = 15;
+	      var tileHeight = 13;
+	      var grid = [];
+	      for (var i = 0; i < tileWidth; i++) {
+	        grid[i] = [];
+	      }
+	      // False indicates there is no boundary
+	      // True indicates there is a boundary
+	      for (var i = 0; i < tileWidth; i++) {
+	        if (i === 0 || i === 14) {
+	          for (var j = 0; j < tileHeight; j++) {
+	            grid[i][j] = new Tile(i, j, true);
+	          }
+	        } else if (i % 2 !== 0 && i !== 0) {
+	          for (var j = 0; j < tileHeight; j++) {
+	            if (j === 0 || j === 12) {
+	              grid[i][j] = new Tile(i, j, true);
+	            } else {
+	              grid[i][j] = new Tile(i, j, false);
+	            }
+	          }
+	        } else {
+	          for (var j = 0; j < tileHeight; j++) {
+	            if (j % 2 !== 0 && j !== 0) {
+	              grid[i][j] = new Tile(i, j, false);
+	            } else {
+	              grid[i][j] = new Tile(i, j, true);
+	            }
+	          }
+	        }
+	      }
+	      return grid;
+	    }
+	  }]);
+
+	  return Map;
+	})();
+
+	module.exports = Map;
 
 /***/ }
 /******/ ]);
