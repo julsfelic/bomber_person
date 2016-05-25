@@ -294,7 +294,7 @@
 	    this.y = options.y;
 	    this.width = 34;
 	    this.height = 34;
-	    this.bombSize = 2;
+	    this.bombSize = 3;
 	    this.health = 1;
 	    this.path = options.path;
 	    generateGif.call(this, { frames: 3, refresh: 200 });
@@ -500,7 +500,7 @@
 	  _createClass(Map, [{
 	    key: 'inbounds',
 	    value: function inbounds(x, y) {
-	      return x <= this.grid.length || y <= this.grid[0].length || x > 0 || y > 0;
+	      return x < this.grid.length && y < this.grid[0].length && x > 0 && y > 0;
 	    }
 	  }, {
 	    key: 'tile',
@@ -674,34 +674,6 @@
 	      // this.destroyPeople();
 	      return this;
 	    }
-
-	    // createPerson(person) {
-	    //   if (this.contains['people']) {
-	    //     this.occupant['people'].set(person);
-	    //   } else {
-	    //     this.contains['people'] = true;
-	    //     this.occupant['people'] = new People(person);
-	    //   }
-	    //   return this;
-	    // }
-	    //
-	    // destroyPerson(person) {
-	    //   if (this.contains['people']) {
-	    //     this.contains['people'] = false;
-	    //     this.occupant['people'].destroy(person.id);
-	    //   }
-	    // }
-	    //
-	    // destroyPeople() {
-	    //   if (this.contains['people']) {
-	    //     let people = this.occupant['people'].all();
-	    //     for (let i = 0; i < people.length; i++) {
-	    //       this.destroyPerson(people[i]);
-	    //       people[i].health = people[i].health - 1;
-	    //     }
-	    //   }
-	    // }
-
 	  }, {
 	    key: 'draw',
 	    value: function draw(context) {
@@ -754,13 +726,6 @@
 	    this.image = this.createImage();
 	  }
 
-	  //
-	  // function createImage() {
-	  //   let image = new Image();
-	  //   image.src = `../assets/block.png`;
-	  //   return image;
-	  // }
-
 	  _createClass(Block, [{
 	    key: "draw",
 	    value: function draw(context) {
@@ -807,7 +772,7 @@
 	    this.width = tile.width;
 	    this.xCoor = tile.x * this.width + this.width / 2;
 	    this.yCoor = tile.y * this.height + this.height / 2;
-	    this.image = createImage();
+	    this.image = this.createImage();
 	  }
 
 	  _createClass(Bomb, [{
@@ -822,16 +787,17 @@
 	        this.draw(context);
 	      }).bind(this);
 	    }
+	  }, {
+	    key: "createImage",
+	    value: function createImage() {
+	      var image = new Image();
+	      image.src = "../assets/bomb.gif";
+	      return image;
+	    }
 	  }]);
 
 	  return Bomb;
 	})();
-
-	function createImage() {
-	  var image = new Image();
-	  image.src = "../assets/bomb.gif";
-	  return image;
-	}
 
 	module.exports = Bomb;
 
@@ -855,7 +821,7 @@
 	    this.width = tile.width;
 	    this.xCoor = tile.x * this.width + this.width / 2;
 	    this.yCoor = tile.y * this.height + this.height / 2;
-	    this.image = createImage();
+	    this.image = this.createImage();
 	  }
 
 	  _createClass(Explosion, [{
@@ -870,16 +836,17 @@
 	        this.draw(context);
 	      }).bind(this);
 	    }
+	  }, {
+	    key: "createImage",
+	    value: function createImage() {
+	      var image = new Image();
+	      image.src = "../assets/fire.png";
+	      return image;
+	    }
 	  }]);
 
 	  return Explosion;
 	})();
-
-	function createImage() {
-	  var image = new Image();
-	  image.src = "../assets/fire.png";
-	  return image;
-	}
 
 	module.exports = Explosion;
 

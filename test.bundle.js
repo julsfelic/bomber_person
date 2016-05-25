@@ -94,8 +94,8 @@
 	// Hot Module Replacement
 	if(false) {
 		// When the styles change, update the <style> tags
-		module.hot.accept("!!/Users/julianfeliciano/Dropbox/Development/Turing/4module/2wk/bomber_person/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/julianfeliciano/Dropbox/Development/Turing/4module/2wk/bomber_person/node_modules/mocha/mocha.css", function() {
-			var newContent = require("!!/Users/julianfeliciano/Dropbox/Development/Turing/4module/2wk/bomber_person/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/julianfeliciano/Dropbox/Development/Turing/4module/2wk/bomber_person/node_modules/mocha/mocha.css");
+		module.hot.accept("!!/Users/maxwell/turing/4module/bomber_person/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/maxwell/turing/4module/bomber_person/node_modules/mocha/mocha.css", function() {
+			var newContent = require("!!/Users/maxwell/turing/4module/bomber_person/node_modules/mocha-loader/node_modules/css-loader/index.js!/Users/maxwell/turing/4module/bomber_person/node_modules/mocha/mocha.css");
 			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
 			update(newContent);
 		});
