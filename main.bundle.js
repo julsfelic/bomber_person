@@ -437,11 +437,17 @@
 	        return;
 	      }
 	      document.addEventListener('keydown', (function (e) {
+	        if (this.webSocket.id === null) {
+	          return;
+	        }
 	        this.map[e.keyCode] = true;
 	        e.preventDefault();
 	      }).bind(this));
 
 	      document.addEventListener('keyup', (function (e) {
+	        if (this.webSocket.id === null) {
+	          return;
+	        }
 	        this.map[e.keyCode] = false;
 	      }).bind(this));
 	      this.loop();

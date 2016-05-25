@@ -9,6 +9,14 @@ body {
   padding: 0;
 }
 
+#lobby {
+
+}
+
+#game-window {
+  display: none;
+}
+
 #game, .winner-screen img {
   position: absolute;
   top: 50%;
