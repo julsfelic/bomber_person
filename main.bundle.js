@@ -52,6 +52,7 @@
 	var Graphic = __webpack_require__(6);
 	var Map = __webpack_require__(7);
 	var WebSocketConnection = __webpack_require__(12);
+	var Lobby = __webpack_require__(13);
 
 	var canvas = document.getElementById('game');
 	var context = canvas.getContext('2d');
@@ -70,6 +71,18 @@
 	  path: "/player-black-up-",
 	  context: context,
 	  direction: "up"
+	}, { id: 3,
+	  x: 13,
+	  y: 1,
+	  path: "/player-blue-down-",
+	  context: context,
+	  direction: "down"
+	}, { id: 4,
+	  x: 1,
+	  y: 11,
+	  path: "/player-red-up-",
+	  context: context,
+	  direction: "up"
 	}]);
 	var ws = new WebSocketConnection();
 	var gameEngine = new GameEngine(people, map, graphic);
@@ -78,7 +91,7 @@
 	  '39': 'right',
 	  '40': 'down',
 	  '37': 'left',
-	  '77': 'bomb'
+	  '32': 'bomb'
 	}, gameEngine, ws);
 	var controllerTwo = new Controller(2, {
 	  '87': 'up',
@@ -87,10 +100,8 @@
 	  '65': 'left',
 	  '67': 'bomb'
 	}, gameEngine, ws, true);
-
-	gameEngine.start();
-	controllerOne.bindEvents();
-	controllerTwo.bindEvents();
+	var lobby = new Lobby(ws, gameEngine, controllerOne, controllerTwo);
+	lobby.selectRoom();
 
 /***/ },
 /* 1 */
@@ -960,30 +971,30 @@
 	    _classCallCheck(this, WebSocketConnection);
 
 	    this.id = null;
-	    this.ws = new WebSocket("ws://" + "localhost:9000" + "/socket");
-
-	    this.ws.onerror = function (event) {
-	      console.debug(event);
-	    };
-	    this.choosePlayer(2);
 	  }
 
 	  _createClass(WebSocketConnection, [{
+	    key: "setWebSocket",
+	    value: function setWebSocket(path) {
+	      this.ws = new WebSocket("ws://" + "localhost:9000" + "/socket/" + path);
+	      this.ws.onerror = function (event) {
+	        console.debug(event);
+	      };
+	    }
+	  }, {
 	    key: "choosePlayer",
 	    value: function choosePlayer(num) {
 	      var that = this;
-	      document.addEventListener("DOMContentLoaded", function () {
-	        var players = function players() {
-	          that.id = this.id.split('-')[1];
-	          that.sendCommands({
-	            id: that.id,
-	            type: "player"
-	          });
-	        };
-	        for (var i = 0; i < num; i++) {
-	          document.getElementById('player-' + (i + 1)).addEventListener('click', players);
-	        }
-	      });
+	      var players = function players() {
+	        that.id = this.id.split('-')[1];
+	        that.sendCommands({
+	          id: that.id,
+	          type: "player"
+	        });
+	      };
+	      for (var i = 0; i < num; i++) {
+	        document.getElementById('player-' + (i + 1)).addEventListener('click', players);
+	      }
 	    }
 	  }, {
 	    key: "sendCommands",
@@ -1009,6 +1020,60 @@
 	})();
 
 	module.exports = WebSocketConnection;
+
+/***/ },
+/* 13 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+
+	var Lobby = (function () {
+	  function Lobby(webSocket, gameEngine, localController, webController) {
+	    _classCallCheck(this, Lobby);
+
+	    this.webSocket = webSocket;
+	    this.gameEngine = gameEngine;
+	    this.localController = localController;
+	    this.webController = webController;
+	  }
+
+	  _createClass(Lobby, [{
+	    key: 'selectRoom',
+	    value: function selectRoom() {
+	      var onPress = function onPress(e) {
+	        var path = e.currentTarget.id.split("-")[1];
+	        this.webSocket.setWebSocket(path);
+	        this.gameEngine.start();
+	        this.localController.bindEvents();
+	        this.webController.bindEvents();
+	        this.hideLobby();
+	      };
+
+	      for (var i = 1; i <= 10; i++) {
+	        var path = 'room-' + i;
+	        var roomButton = document.getElementById(path);
+	        roomButton.addEventListener('click', onPress.bind(this));
+	      }
+	    }
+	  }, {
+	    key: 'hideLobby',
+	    value: function hideLobby() {
+	      var lobby = document.getElementById('lobby');
+	      var window = document.getElementById('game-window');
+	      window.style.display = "inline";
+	      lobby.style.display = "none";
+	      this.webSocket.choosePlayer(4);
+	    }
+	  }]);
+
+	  return Lobby;
+	})();
+
+	module.exports = Lobby;
 
 /***/ }
 /******/ ]);

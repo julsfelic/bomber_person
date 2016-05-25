@@ -9,8 +9,15 @@ body {
   padding: 0;
 }
 
-#lobby {
+.room-button {
+  display: block;
+  width: 100px;
+}
 
+#lobby {
+  position: absolute;
+  top: 30%;
+  left: 50%;
 }
 
 #game-window {
