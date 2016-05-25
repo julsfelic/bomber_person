@@ -1,3 +1,35 @@
+/* General Styling */
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#game, .winner-screen img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 435px;
+  margin: -218px 0 0 -256px;
+  width: 512px;
+}
+
+/* Canvas Styling */
+
 #game {
   background: url("../assets/stage-1.jpg");
+}
+
+/* Images */
+
+.winner-screen img {
+  opacity: 0;
+  height: 435px;
+  overflow: hidden;
+  transition: all 2.7s ease .15s;
+  z-index: 2;
 }
