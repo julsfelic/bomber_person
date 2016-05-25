@@ -976,7 +976,7 @@
 	  _createClass(WebSocketConnection, [{
 	    key: "setWebSocket",
 	    value: function setWebSocket(path) {
-	      this.ws = new WebSocket("ws://" + "localhost:9000" + "/socket/" + path);
+	      this.ws = new WebSocket("ws://" + "162.243.248.192:9000" + "/socket/" + path);
 	      this.ws.onerror = function (event) {
 	        console.debug(event);
 	      };
