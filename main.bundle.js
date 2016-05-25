@@ -51,6 +51,7 @@
 	var Controller = __webpack_require__(5);
 	var Graphic = __webpack_require__(6);
 	var Map = __webpack_require__(7);
+	var WebSocketConnection = __webpack_require__(12);
 
 	var canvas = document.getElementById('game');
 	var context = canvas.getContext('2d');
@@ -61,13 +62,16 @@
 	  x: 1,
 	  y: 1,
 	  path: "/player-down-",
-	  context: context
+	  context: context,
+	  direction: "down"
 	}, { id: 2,
 	  x: 13,
 	  y: 11,
-	  path: "/player-up-",
-	  context: context
+	  path: "/player-black-up-",
+	  context: context,
+	  direction: "up"
 	}]);
+	var ws = new WebSocketConnection();
 	var gameEngine = new GameEngine(people, map, graphic);
 	var controllerOne = new Controller(1, {
 	  '38': 'up',
@@ -75,14 +79,14 @@
 	  '40': 'down',
 	  '37': 'left',
 	  '77': 'bomb'
-	}, gameEngine);
+	}, gameEngine, ws);
 	var controllerTwo = new Controller(2, {
 	  '87': 'up',
 	  '68': 'right',
 	  '83': 'down',
 	  '65': 'left',
 	  '67': 'bomb'
-	}, gameEngine);
+	}, gameEngine, ws, true);
 
 	gameEngine.start();
 	controllerOne.bindEvents();
@@ -115,7 +119,7 @@
 	        return;
 	      }
 	      var person = this.people.get(id);
-	      person.path = '/player-' + direction + '-';
+	      person.updateDirection(direction);
 	      var xCoor = x + person.x;
 	      var yCoor = y + person.y;
 	      if (this.map.occupied(xCoor, yCoor)) {
@@ -170,6 +174,13 @@
 	    key: 'peopleStatus',
 	    value: function peopleStatus() {
 	      var people = this.people.all();
+
+	      if (this.people.gameEnd()) {
+	        this.endGame(this.people.gameWinner);
+	        cancelAnimationFrame(this.graphic.requestId);
+	        this.graphic.requestId = undefined;
+	      }
+
 	      for (var i = 0; i < people.length; i++) {
 	        var person = people[i];
 	        var tile = this.map.tile(person.x, person.y);
@@ -190,6 +201,19 @@
 	    value: function start() {
 	      this.peopleStatus();
 	      this.graphic.draw();
+	    }
+	  }, {
+	    key: 'endGame',
+	    value: function endGame(winner) {
+	      var image = document.querySelector('.winner-screen img');
+
+	      if (winner.id === 1) {
+	        image.src = '/assets/victory-white.png';
+	      } else if (winner.id === 2) {
+	        image.src = '/assets/victory-black.png';
+	      }
+
+	      image.style.opacity = 1;
 	    }
 	  }]);
 
@@ -266,6 +290,18 @@
 	    value: function destroy(id) {
 	      delete this.players[id];
 	    }
+	  }, {
+	    key: 'gameEnd',
+	    value: function gameEnd() {
+	      var players = this.all().filter(function (player) {
+	        return player.health >= 1;
+	      });
+
+	      if (players.length === 1) {
+	        this.gameWinner = players[0];
+	        return true;
+	      }
+	    }
 	  }]);
 
 	  return People;
@@ -297,6 +333,7 @@
 	    this.bombSize = 3;
 	    this.health = 1;
 	    this.path = options.path;
+	    this.direction = options.direction;
 	    generateGif.call(this, { frames: 3, refresh: 200 });
 	  }
 
@@ -319,6 +356,12 @@
 	      if (this.health >= 1) {
 	        context.drawImage(this.gif, this.x * this.height + 6, this.y * this.width - 14);
 	      } else {}
+	    }
+	  }, {
+	    key: 'updateDirection',
+	    value: function updateDirection(direction) {
+	      this.path = this.path.replace(this.direction, direction);
+	      this.direction = direction;
 	    }
 	  }]);
 
@@ -354,20 +397,21 @@
 /* 5 */
 /***/ function(module, exports) {
 
-	'use strict';
+	"use strict";
 
-	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 	var Controller = (function () {
-	  function Controller(id, commands, gameEngine) {
+	  function Controller(id, commands, gameEngine, webSocket, webSwitch) {
 	    _classCallCheck(this, Controller);
 
-	    this.id = id;
 	    this.keyStrokes = commands;
 	    this.directions = {};
 	    this.map = {};
+	    this.webSocket = webSocket;
+	    this.webSwitch = webSwitch;
 	    var keys = Object.keys(this.keyStrokes);
 	    for (var i = 0; i < keys.length; i++) {
 	      var value = this.keyStrokes[keys[i]];
@@ -378,8 +422,20 @@
 	  }
 
 	  _createClass(Controller, [{
-	    key: 'bindEvents',
+	    key: "bindEvents",
 	    value: function bindEvents() {
+	      if (this.webSwitch === true) {
+	        this.webSocket.receiveCommands((function (e) {
+	          if (e.id !== this.webSocket.id) {
+	            if (e.type === "move") {
+	              this.gameEngine.move(e.id, e.x, e.y, e.direction);
+	            } else if (e.type === "bomb") {
+	              this.gameEngine.dropBomb(e.id);
+	            }
+	          }
+	        }).bind(this));
+	        return;
+	      }
 	      document.addEventListener('keydown', (function (e) {
 	        this.map[e.keyCode] = true;
 	        e.preventDefault();
@@ -391,22 +447,54 @@
 	      this.loop();
 	    }
 	  }, {
-	    key: 'loop',
+	    key: "loop",
 	    value: function loop() {
 	      if (this.map[this.directions["up"]] === true) {
-	        this.gameEngine.move(this.id, 0, -1, 'up');
+	        this.gameEngine.move(this.webSocket.id, 0, -1, 'up');
+	        this.webSocket.sendCommands({
+	          id: this.webSocket.id,
+	          x: 0,
+	          y: -1,
+	          direction: 'up',
+	          type: 'move'
+	        });
 	      }
 	      if (this.map[this.directions["down"]] === true) {
-	        this.gameEngine.move(this.id, 0, 1, 'down');
+	        this.gameEngine.move(this.webSocket.id, 0, 1, 'down');
+	        this.webSocket.sendCommands({
+	          id: this.webSocket.id,
+	          x: 0,
+	          y: 1,
+	          direction: 'down',
+	          type: 'move'
+	        });
 	      }
 	      if (this.map[this.directions["right"]] === true) {
-	        this.gameEngine.move(this.id, 1, 0, 'right');
+	        this.gameEngine.move(this.webSocket.id, 1, 0, 'right');
+	        this.webSocket.sendCommands({
+	          id: this.webSocket.id,
+	          x: 1,
+	          y: 0,
+	          direction: 'right',
+	          type: 'move'
+	        });
 	      }
 	      if (this.map[this.directions["left"]] === true) {
-	        this.gameEngine.move(this.id, -1, 0, 'left');
+	        this.gameEngine.move(this.webSocket.id, -1, 0, 'left');
+	        this.webSocket.sendCommands({
+	          id: this.webSocket.id,
+	          x: -1,
+	          y: 0,
+	          direction: 'left',
+	          type: 'move'
+	        });
 	      }
 	      if (this.map[this.directions["bomb"]] === true) {
-	        this.gameEngine.dropBomb(this.id);
+	        this.gameEngine.dropBomb(this.webSocket.id);
+	        this.webSocket.sendCommands({
+	          id: this.webSocket.id,
+	          type: 'bomb'
+	        });
 	      }
 	      setTimeout(this.loop.bind(this), 1000 / 12);
 	    }
@@ -434,6 +522,7 @@
 	    this.drawables = drawables;
 	    this.context = context;
 	    this.onload();
+	    this.requestId = undefined;
 	  }
 
 	  _createClass(Graphic, [{
@@ -448,7 +537,7 @@
 	  }, {
 	    key: "draw",
 	    value: function draw() {
-	      requestAnimationFrame((function gameLoop() {
+	      this.requestId = requestAnimationFrame((function gameLoop() {
 	        this.clear();
 	        for (var i = 0; i < this.drawables.length; i++) {
 	          this.drawables[i].draw(this.context);
@@ -849,6 +938,71 @@
 	})();
 
 	module.exports = Explosion;
+
+/***/ },
+/* 12 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var WebSocketConnection = (function () {
+	  function WebSocketConnection() {
+	    _classCallCheck(this, WebSocketConnection);
+
+	    this.id = null;
+	    this.ws = new WebSocket("ws://" + "localhost:9000" + "/socket");
+
+	    this.ws.onerror = function (event) {
+	      console.debug(event);
+	    };
+	    this.choosePlayer(2);
+	  }
+
+	  _createClass(WebSocketConnection, [{
+	    key: "choosePlayer",
+	    value: function choosePlayer(num) {
+	      var that = this;
+	      document.addEventListener("DOMContentLoaded", function () {
+	        var players = function players() {
+	          that.id = this.id.split('-')[1];
+	          that.sendCommands({
+	            id: that.id,
+	            type: "player"
+	          });
+	        };
+	        for (var i = 0; i < num; i++) {
+	          document.getElementById('player-' + (i + 1)).addEventListener('click', players);
+	        }
+	      });
+	    }
+	  }, {
+	    key: "sendCommands",
+	    value: function sendCommands(commands) {
+	      this.ws.send(JSON.stringify(commands));
+	    }
+	  }, {
+	    key: "receiveCommands",
+	    value: function receiveCommands(callback) {
+	      var commands = {};
+	      this.ws.onmessage = function (event) {
+	        commands = JSON.parse(event.data);
+	        if (commands.type === "player") {
+	          document.getElementById('player-' + commands.id).style.display = "none";
+	        } else {
+	          callback(commands);
+	        }
+	      };
+	    }
+	  }]);
+
+	  return WebSocketConnection;
+	})();
+
+	module.exports = WebSocketConnection;
 
 /***/ }
 /******/ ]);
