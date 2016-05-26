@@ -103,6 +103,16 @@
 	var lobby = new Lobby(ws, gameEngine, controllerOne, controllerTwo);
 	lobby.selectRoom();
 
+	var newGame = function newGame(e) {
+	  e.preventDefault();
+	  location.reload();
+	};
+
+	var newGameButton = document.querySelector('new-game');
+	newGameButton.addEventListener('click', function (e) {
+	  newGame(e);
+	}, false);
+
 /***/ },
 /* 1 */
 /***/ function(module, exports) {
@@ -216,15 +226,21 @@
 	  }, {
 	    key: 'endGame',
 	    value: function endGame(winner) {
+	      var newGame = document.querySelector('.new-game');
 	      var image = document.querySelector('.winner-screen img');
 
 	      if (winner.id === 1) {
 	        image.src = '/assets/victory-white.png';
 	      } else if (winner.id === 2) {
 	        image.src = '/assets/victory-black.png';
+	      } else if (winner.id === 3) {
+	        image.src = '/assets/victory-blue.png';
+	      } else if (winner.id === 4) {
+	        image.src = '/assets/victory-red.png';
 	      }
 
 	      image.style.opacity = 1;
+	      newGame.style.opacity = 1;
 	    }
 	  }]);
 

@@ -4,27 +4,41 @@ html {
 }
 
 body {
+  font-family: 'VT323';
   min-height: 100%;
   margin: 0;
   padding: 0;
 }
 
 .room-button {
+  font-family: 'VT323';
   display: block;
   width: 100px;
 }
 
 #lobby {
+  background: url('../assets/bomberperson-lobby.gif') no-repeat center center fixed;
+  -webkit-background-size: 420px;
+  -moz-background-size: 420px;
+  -o-background-size: 420px;
+  background-size: 420px;
   position: absolute;
   top: 30%;
   left: 50%;
+}
+
+#lobby h1 {
+  font-size: 5rem;
+  text-align: center;
 }
 
 #game-window {
   display: none;
 }
 
-#game, .winner-screen img {
+#game,
+.winner-screen img,
+#lobby {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -41,10 +55,46 @@ body {
 
 /* Images */
 
+.new-game {
+  display: block;
+  font-size: 2.3rem;
+  opacity: 0;
+  margin-top: 420px;
+  text-align: center;
+  transition: all 2.7s ease .15s;
+}
+
 .winner-screen img {
   opacity: 0;
   height: 435px;
   overflow: hidden;
   transition: all 2.7s ease .15s;
   z-index: 2;
+}
+
+/* Player Buttons */
+
+.player-buttons {
+  text-align: center
+}
+
+.player-buttons div {
+  display: inline-block;
+  margin: 40px 30px;
+}
+
+.player-buttons button {
+  display: block;
+}
+
+/* Lobby */
+
+#lobby h1 {
+  margin: 0 0 50px 0;
+}
+
+#lobby button {
+  display: inline;
+  font-size: 2rem;
+  margin: 10px 10px;
 }
