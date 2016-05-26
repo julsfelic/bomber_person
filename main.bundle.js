@@ -108,7 +108,7 @@
 	  location.reload();
 	};
 
-	var newGameButton = document.querySelector('new-game');
+	var newGameButton = document.querySelector('.new-game');
 	newGameButton.addEventListener('click', function (e) {
 	  newGame(e);
 	}, false);
@@ -1069,7 +1069,7 @@
 	        this.hideLobby();
 	      };
 
-	      for (var i = 1; i <= 10; i++) {
+	      for (var i = 1; i < 10; i++) {
 	        var path = 'room-' + i;
 	        var roomButton = document.getElementById(path);
 	        roomButton.addEventListener('click', onPress.bind(this));

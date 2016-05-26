@@ -74,13 +74,9 @@ body {
 
 /* Player Buttons */
 
-.player-buttons {
-  text-align: center
-}
-
 .player-buttons div {
-  display: inline-block;
-  margin: 40px 30px;
+  display: block;
+  margin-left: 10px;
 }
 
 .player-buttons button {
