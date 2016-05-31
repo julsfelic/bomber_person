@@ -1,55 +1,68 @@
-### Gameplan
+# Bomber Person
 
-1. Figure how to put in place sprites (Together)
-2. Create map (Together)
-3. Bomber Person / Blocks (Solo)
-4. Bombs / Explosion (Solo)
-5. Game Engine (Together)
-6. Timer / Map Shrink (Together)
-7. Multiplayer Local (Solo)
-8. Keeping score (Solo)
+Bomber Person is a recreation of the SNES classic Super Bomberman 5. Specifically,
+Bomber Person recreates the four player battle mode that was available for Super
+Bomberman 5.
 
-### Objects
-- Bomber Person
-- Map (inclusive of pillars)
-- Blocks
-- Explosion
-- Tile
-- Bombs
+## Getting Started
 
-#### Tile
-- A tile has boundaries
-- MVP: A tile is occupied or not occupied
-- Has attributes that will describe what is on or in the tile
+The following instructions will allow you to get a copy of the Bomber Person project
+up and running on your local machine for development and testing purposes.
 
-#### Bomber Person
-- They can be controlled using keys
-  - Arrow keys or WADS
-  - Bombs can be dropped using "M" or "Q" respectively
-- Bomber Person can only lay one bomb at a time
-- They can die when touched with explosion
+### Prerequisities
 
-#### Map
-- Has boundaries
-- Has pillars
-- Explosion can not go through pillars
-- Bomber person can not go past boundaries or go through pillars
+Node is needed in order to use NPM. To download Node, you can visit the [nodejs](https://nodejs.org/en/)
+website for the latest builds.
 
-#### Block
-- Bomber Person can not go through blocks
-- Explosion can destroy blocks
-- Explosion can not go through multiple blocks
+### Installing
 
-#### Explosion
-- Births from Bomb
-- Bomber Person death on touch
-- Blocks death on touch
-- Temporary existence
-- Unclear fire is behind
+To install, clone down the [Bomber Man Go server](https://github.com/amaxwellblair/bomber_go)
+and clone down the [Bomber Man Game](https://github.com/julsfelic/bomber_person) to directory
+of your choice.
 
-#### Bomb
-- Birthed by Bomber Person
-- Temporary existence
-- Bomber Person can not go through bomb
-  - Needs logic for initial birth which is on top of Bomber Person
-- Bomber Person can die from their own bomb or other's bombs
+To start up the Bomber Man Go server, simply provide the path to the binary in your
+terminal and the server will start up.
+
+```
+~/Desktop/bomber_go/bomber_go
+```
+
+Once you have the server up and running, we'll go ahead an set up the game to run locally.
+`cd` into the `bomber_person` directory and run:
+
+```
+$ npm install
+```
+
+This will go ahead an install are the necessary dependecies for the project.
+
+Once finished, go ahead and run:
+
+```
+$ npm start
+```
+
+This will start up the game using webpack-dev-server on port 8080. All that is
+left to do is pick your lobby, pick your player and have some fun!
+
+## Running the tests
+
+To run the test suite, run the command:
+
+```
+$ npm test
+```
+
+## Built With
+
+* HTML5 Canvas
+* JavaScript (ES2015)
+* WebSockets
+* Go
+
+## Authors
+
+* **Julian Feliciano** - *Initial work* - [github](https://github.com/julsfelic)
+* **Allan Blair** - *Initial work* - [github](https://github.com/amaxwellblair)
+
+See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
